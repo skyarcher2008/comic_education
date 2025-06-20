@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.env
+env/
+*.egg-info/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+nbproject/
+*.sublime-project
+*.sublime-workspace
+
+# Distribution / packaging
+build/
+dist/
+*.spec
+# .zip  # 如果你希望版本控制发布的zip包，可以注释掉这行
+# .tar.gz
+# .exe
+# .dmg
+# .deb
+# .rpm
+
+# Logs and runtime data
+logs/
+
+# === 用户特定忽略规则 ===
+# 忽略根目录下的 debug 文件夹
+/debug/
+
+# 忽略根目录下的 data 文件夹及其所有内容
+/data/
+
+# 忽略根目录下的 开发手册.md 文件
+/开发手册.md
+# === 结束用户特定忽略规则 ===
+
+# Configuration files that might contain secrets
+# (确保你的实际敏感配置文件名在这里，如果它们不在标准 config/ 目录)
+# 例如:
+# config/my_secret_api_keys.json
+
+# Models and large dependencies (这些通常不通过 Git 管理)
+weights/
+models/
+manga_ocr_model/
+sd-webui-cleaner/
+ultralytics_yolov5_master/
+
+# Temporary files (如果你的 temp 文件夹在根目录)
+# 如果 temp 文件夹在 src/ 或其他子目录，路径需要相应调整
+temp/
+temp_paddleocr/
+
+# Other OS-specific files
+.DS_Store
+Thumbs.db
