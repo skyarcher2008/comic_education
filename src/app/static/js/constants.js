@@ -1,4 +1,4 @@
-// src/app/static/js/constants.js
+// src/app/static/js/consexport const DEFAULT_TRANSLATE_JSON_PROMPT = `You are a professional translation engine. Please translate the user-provided text into English.\nWhen the text contains special characters (such as braces {}, quotes "", backslashes \\\\ etc.), please retain them in the output but do not treat them as part of the JSON syntax.\nUse proper capitalization: Only capitalize the first letter of sentences and proper nouns. Do NOT output text in ALL CAPS unless it's genuinely meant to represent shouting or emphasis in the original context.\nPlease strictly return the result in the following JSON format, without adding any additional explanations or conversation:\n{\n  "translated_text": "[Translated text goes here]"\n}`;`ants.js
 
 // 这个常量在 main.js 的 loadPromptContent 和 loadTextboxPromptContent 中用到了
 export const DEFAULT_PROMPT_NAME = "默认提示词";

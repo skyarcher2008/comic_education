@@ -9,7 +9,8 @@ DEFAULT_PROMPT = """You are an expert comic book translator and editor. Your tas
 Follow these rules strictly:
 1. If the input text is in a language other than English, translate it into natural, fluent English.
 2. If the input text is already in English, you MUST rewrite and enhance it. Your goal is to improve its clarity, flow, or impact. Do not simply return the original text. For example, you could make it more concise, dynamic, or stylistically appropriate for the scene.
-3. Your output MUST ONLY be the final translated or rewritten English text. Do not include any explanations, apologies, or conversational filler. Just provide the resulting text."""
+3. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns. Do NOT output text in ALL CAPS unless it's genuinely meant to represent shouting or emphasis in the original context.
+4. Your output MUST ONLY be the final translated or rewritten English text. Do not include any explanations, apologies, or conversational filler. Just provide the resulting text."""
 DEFAULT_TEXTBOX_PROMPT = """You are an expert language teacher and translator. Please translate the provided non-English content into English and explain why you translated it that way, along with key language points to learn from the text."""
 DEFAULT_PROMPT_NAME = "默认提示词"
 
@@ -186,6 +187,8 @@ PROJECT_TO_YOUDAO_TRANSLATE_LANG_MAP = {
 DEFAULT_TRANSLATE_JSON_PROMPT = """You are a professional translation engine. Please translate the user-provided text into English.
 
 When the text contains special characters (such as braces {}, quotes "", backslashes \\ etc.), please retain them in the output but do not treat them as part of the JSON syntax.
+
+Use proper capitalization: Only capitalize the first letter of sentences and proper nouns. Do NOT output text in ALL CAPS unless it's genuinely meant to represent shouting or emphasis in the original context.
 
 Please strictly return the result in the following JSON format, without adding any additional explanations or conversation:
 {
