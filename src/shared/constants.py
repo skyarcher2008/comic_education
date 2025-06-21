@@ -4,8 +4,13 @@
 import os
 
 # --- 提示词相关 ---
-DEFAULT_PROMPT = "你是一个好用的翻译助手。请将我的非中文语句段落连成一句或几句话并翻译成中文，我发给你所有的话都是需要翻译的内容，你只需要回答翻译结果。特别注意：翻译结果字数不能超过原文字数！翻译结果请符合中文的语言习惯。"
-DEFAULT_TEXTBOX_PROMPT = "你是一个专业的外语老师。请将我提供的非中文内容连成一句或几句话并翻译成中文。同时要告诉我为什么这么翻译，这句话有哪些知识点。"
+DEFAULT_PROMPT = """You are an expert comic book translator and editor. Your task is to process the text provided and return a high-quality English version suitable for a comic book.
+
+Follow these rules strictly:
+1. If the input text is in a language other than English, translate it into natural, fluent English.
+2. If the input text is already in English, you MUST rewrite and enhance it. Your goal is to improve its clarity, flow, or impact. Do not simply return the original text. For example, you could make it more concise, dynamic, or stylistically appropriate for the scene.
+3. Your output MUST ONLY be the final translated or rewritten English text. Do not include any explanations, apologies, or conversational filler. Just provide the resulting text."""
+DEFAULT_TEXTBOX_PROMPT = """You are an expert language teacher and translator. Please translate the provided non-English content into English and explain why you translated it that way, along with key language points to learn from the text."""
 DEFAULT_PROMPT_NAME = "默认提示词"
 
 # --- 模型与历史 ---
@@ -35,7 +40,7 @@ UPLOAD_FOLDER = 'uploads'  # 保留旧变量以兼容现有代码
 TEMP_FOLDER = 'temp'  # 保留旧变量以兼容现有代码
 
 # --- 默认翻译与渲染参数 ---
-DEFAULT_TARGET_LANG = 'zh'
+DEFAULT_TARGET_LANG = 'en'
 DEFAULT_SOURCE_LANG = 'japan'
 DEFAULT_FONT_SIZE = 30
 DEFAULT_TEXT_DIRECTION = 'vertical'
@@ -178,22 +183,22 @@ PROJECT_TO_YOUDAO_TRANSLATE_LANG_MAP = {
 }
 
 # --- 新增 JSON 格式提示词 ---
-DEFAULT_TRANSLATE_JSON_PROMPT = """你是一个专业的翻译引擎。请将用户提供的文本翻译成简体中文。
+DEFAULT_TRANSLATE_JSON_PROMPT = """You are a professional translation engine. Please translate the user-provided text into English.
 
-当文本中包含特殊字符（如大括号{}、引号""、反斜杠\等）时，请在输出中保留它们但不要将它们视为JSON语法的一部分。
+When the text contains special characters (such as braces {}, quotes "", backslashes \\ etc.), please retain them in the output but do not treat them as part of the JSON syntax.
 
-请严格按照以下 JSON 格式返回结果，不要添加任何额外的解释或对话:
+Please strictly return the result in the following JSON format, without adding any additional explanations or conversation:
 {
-  "translated_text": "[翻译后的文本放在这里]"
+  "translated_text": "[Translated text goes here]"
 }"""
 
-DEFAULT_AI_VISION_OCR_JSON_PROMPT = """你是一个OCR助手。请将我发送给你的图片中的所有文字提取出来。
+DEFAULT_AI_VISION_OCR_JSON_PROMPT = """You are an OCR assistant. Please extract all text from the image I send you.
 
-当文本中包含特殊字符（如大括号{}、引号""、反斜杠\等）时，请在输出中保留它们但不要将它们视为JSON语法的一部分。如果需要，你可以使用转义字符\\来表示这些特殊字符。
+When the text contains special characters (such as braces {}, quotes "", backslashes \\ etc.), please retain them in the output but do not treat them as part of the JSON syntax. If needed, you can use escape characters \\\\ to represent these special characters.
 
-请严格按照以下 JSON 格式返回结果，不要添加任何额外的解释或对话:
+Please strictly return the result in the following JSON format, without adding any additional explanations or conversation:
 {
-  "extracted_text": "[这里放入所有识别到的文字，可以包含换行符以大致保留原始分段，但不要包含任何其他非文本内容]"
+  "extracted_text": "[Put all recognized text here, may include line breaks to roughly preserve original segmentation, but do not include any other non-text content]"
 }"""
 
 # --- rpm (Requests Per Minute) Limiting ---

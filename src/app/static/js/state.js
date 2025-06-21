@@ -86,7 +86,7 @@ export let proofreadingNoThinkingMethod = 'gemini'; // 取消思考的方法: 'g
 
 // 源语言和目标语言
 export let sourceLanguage = 'auto'; // 默认为自动检测
-export let targetLanguage = 'zh-CN'; // 默认为简体中文
+export let targetLanguage = 'en'; // 默认为英文
 
 // --- 新增状态变量 ---
 export let enableTextStroke = defaultEnableTextStroke;

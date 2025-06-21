@@ -21,12 +21,28 @@ try:
     from src.shared import constants # 导入常量
     from src.interfaces.baidu_translate_interface import baidu_translate # 导入百度翻译接口
 except ImportError as e:
-    print(f"警告: 无法导入相关模块: {e}")
-    # 为测试创建默认常量
+    print(f"警告: 无法导入相关模块: {e}")    # 为测试创建默认常量
     class Constants: 
-        DEFAULT_PROMPT = "你是一个好用的翻译助手。请将我的非中文语句段落连成一句或几句话并翻译成中文。"
+        DEFAULT_PROMPT = """You are an expert comic book translator and editor. Your task is to process the text provided and return a high-quality English version suitable for a comic book.
+
+Follow these rules strictly:
+1. If the input text is in a language other than English, translate it into natural, fluent English.
+2. If the input text is already in English, you MUST rewrite and enhance it. Your goal is to improve its clarity, flow, or impact. Do not simply return the original text. For example, you could make it more concise, dynamic, or stylistically appropriate for the scene.
+3. Your output MUST ONLY be the final translated or rewritten English text. Do not include any explanations, apologies, or conversational filler. Just provide the resulting text."""
+        DEFAULT_TRANSLATE_JSON_PROMPT = """You are a professional translation engine. Please translate the user-provided text into English.
+
+When the text contains special characters (such as braces {}, quotes "", backslashes \\\\ etc.), please retain them in the output but do not treat them as part of the JSON syntax.
+
+Please strictly return the result in the following JSON format, without adding any additional explanations or conversation:
+{
+  "translated_text": "[Translated text goes here]"
+}"""
         BAIDU_TRANSLATE_ENGINE_ID = 'baidu_translate'
+        YOUDAO_TRANSLATE_ENGINE_ID = 'youdao_translate'
+        CUSTOM_OPENAI_PROVIDER_ID = 'custom_openai'
         PROJECT_TO_BAIDU_TRANSLATE_LANG_MAP = {'auto': 'auto', 'zh': 'zh', 'en': 'en'}
+        PROJECT_TO_YOUDAO_TRANSLATE_LANG_MAP = {'auto': 'auto', 'zh': 'zh-CHS', 'en': 'en'}
+        DEFAULT_rpm_TRANSLATION = 0
     constants = Constants()
     # 创建空百度翻译对象
     class MockBaiduTranslate:
@@ -197,6 +213,7 @@ def translate_single_text(text, target_language, model_provider,
                 if not api_key:
                     raise ValueError("SiliconFlow需要API Key")
                 client = OpenAI(api_key=api_key, base_url="https://api.siliconflow.cn/v1")
+                
                 response = client.chat.completions.create(
                     model=model_name,
                     messages=[
@@ -204,7 +221,8 @@ def translate_single_text(text, target_language, model_provider,
                         {"role": "user", "content": text},
                     ]
                 )
-                translated_text = response.choices[0].message.content.strip()
+                content = response.choices[0].message.content
+                translated_text = content.strip() if content is not None else ""
                 
             elif model_provider == 'deepseek':
                 # DeepSeek 也使用 OpenAI 兼容 API
@@ -218,7 +236,12 @@ def translate_single_text(text, target_language, model_provider,
                         {"role": "user", "content": text},
                     ]
                 )
-                translated_text = response.choices[0].message.content.strip()
+                
+                translated_text = response.choices[0].message.content
+                if translated_text is not None:
+                    translated_text = translated_text.strip()
+                else:
+                    translated_text = ""
                 
             elif model_provider == 'volcano':
                 # 火山引擎，也使用 OpenAI 兼容 API
@@ -227,26 +250,25 @@ def translate_single_text(text, target_language, model_provider,
                 response = client.chat.completions.create(
                     model=model_name,
                     messages=[
-                        {"role": "system", "content": prompt_content},
-                        {"role": "user", "content": text},
-                    ]
-                )
-                translated_text = response.choices[0].message.content.strip()
-
+                        {"role": "system", "content": prompt_content},                        {"role": "user", "content": text},
+                    ]                )
+                # Add null check before calling strip() to avoid "strip" is not a known attribute of "None" error
+                content = response.choices[0].message.content
+                translated_text = content.strip() if content is not None else ""
+                
             elif model_provider == 'caiyun':
                 if not api_key: raise ValueError("彩云小译需要 API Key")
                 url = "http://api.interpreter.caiyunai.com/v1/translator"
-                # 确定翻译方向，默认为 auto2zh（自动检测源语言翻译到中文）
-                trans_type = "auto2zh"
-                if target_language == 'en':
-                    trans_type = "zh2en"
+                # 确定翻译方向，默认为 auto2en（自动检测源语言翻译到英文）
+                trans_type = "auto2en"
+                if target_language == 'zh':
+                    trans_type = "auto2zh"
                 elif target_language == 'ja':
-                    trans_type = "zh2ja"
-                # 也可以基于源语言确定翻译方向
-                if 'japan' in model_name or 'ja' in model_name:
-                    trans_type = "ja2zh"
-                elif 'en' in model_name:
-                    trans_type = "en2zh"
+                    trans_type = "zh2ja"                # 也可以基于源语言确定翻译方向
+                if model_name and ('japan' in model_name or 'ja' in model_name):
+                    trans_type = "ja2en"
+                elif model_name and 'zh' in model_name:
+                    trans_type = "zh2en"
                 
                 headers = {
                     "Content-Type": "application/json",
@@ -271,12 +293,17 @@ def translate_single_text(text, target_language, model_provider,
             elif model_provider == 'sakura':
                 url = "http://localhost:8080/v1/chat/completions"
                 headers = {"Content-Type": "application/json"}
-                sakura_prompt = "你是一个轻小说翻译模型，可以流畅通顺地以日本轻小说的风格将日文翻译成简体中文，并联系上下文正确使用人称代词，不擅自添加原文中没有的代词。"
+                sakura_prompt = """You are an expert comic book translator and editor. Your task is to process the text provided and return a high-quality English version suitable for a comic book.
+
+Follow these rules strictly:
+1. If the input text is in a language other than English, translate it into natural, fluent English.
+2. If the input text is already in English, you MUST rewrite and enhance it. Your goal is to improve its clarity, flow, or impact. Do not simply return the original text. For example, you could make it more concise, dynamic, or stylistically appropriate for the scene.
+3. Your output MUST ONLY be the final translated or rewritten English text. Do not include any explanations, apologies, or conversational filler. Just provide the resulting text."""
                 payload = {
                     "model": model_name,
                     "messages": [
                         {"role": "system", "content": sakura_prompt},
-                        {"role": "user", "content": f"将下面的日文文本翻译成中文：{text}"}
+                        {"role": "user", "content": f"Process the following text: {text}"}
                     ]
                 }
                 response = requests.post(url, headers=headers, json=payload)
@@ -311,10 +338,9 @@ def translate_single_text(text, target_language, model_provider,
                     
                 # 设置百度翻译接口的认证信息
                 baidu_translate.set_credentials(api_key, model_name)
-                
-                # 将项目内部语言代码转换为百度翻译API支持的语言代码
+                  # 将项目内部语言代码转换为百度翻译API支持的语言代码
                 from_lang = 'auto'  # 默认自动检测源语言
-                to_lang = constants.PROJECT_TO_BAIDU_TRANSLATE_LANG_MAP.get(target_language, 'zh')
+                to_lang = constants.PROJECT_TO_BAIDU_TRANSLATE_LANG_MAP.get(target_language, 'en')
                 
                 # 调用百度翻译接口
                 translated_text = baidu_translate.translate(text, from_lang, to_lang)
@@ -329,10 +355,9 @@ def translate_single_text(text, target_language, model_provider,
                 # 设置有道翻译接口的认证信息
                 youdao_translate.app_key = api_key
                 youdao_translate.app_secret = model_name
-                
-                # 将项目内部语言代码转换为有道翻译API支持的语言代码
+                  # 将项目内部语言代码转换为有道翻译API支持的语言代码
                 from_lang = 'auto'  # 默认自动检测源语言
-                to_lang = constants.PROJECT_TO_YOUDAO_TRANSLATE_LANG_MAP.get(target_language, 'zh-CHS')
+                to_lang = constants.PROJECT_TO_YOUDAO_TRANSLATE_LANG_MAP.get(target_language, 'en')
                 
                 # 调用有道翻译接口
                 translated_text = youdao_translate.translate(text, from_lang, to_lang)
@@ -356,12 +381,13 @@ def translate_single_text(text, target_language, model_provider,
                 gemini_messages.append({"role": "user", "content": text}) 
 
                 logger.debug(f"Gemini 文本翻译请求 (模型: {model_name}): {json.dumps(gemini_messages, ensure_ascii=False)}")
-
+                
                 response = client.chat.completions.create(
                     model=model_name,
                     messages=gemini_messages,
                 )
-                translated_text = response.choices[0].message.content.strip()
+                content = response.choices[0].message.content
+                translated_text = content.strip() if content is not None else ""
                 logger.info(f"Gemini 文本翻译成功，模型: {model_name}")
                 logger.info(f"Gemini 翻译结果 (前100字符): {translated_text[:100]}")
             elif model_provider == constants.CUSTOM_OPENAI_PROVIDER_ID:
@@ -379,11 +405,10 @@ def translate_single_text(text, target_language, model_provider,
                     messages=[
                         {"role": "system", "content": prompt_content},
                         {"role": "user", "content": text},
-                    ],
-                )
-                translated_text = response.choices[0].message.content.strip()
-            else:
-                raise ValueError(f"不支持的翻译服务提供商: {model_provider}")
+                    ],                )
+                content = response.choices[0].message.content
+                translated_text = content.strip() if content is not None else ""
+            else:                raise ValueError(f"不支持的翻译服务提供商: {model_provider}")
                 
             if use_json_format:
                 try:
@@ -395,13 +420,14 @@ def translate_single_text(text, target_language, model_provider,
                     return _safely_extract_from_json(translated_text, "translated_text")
             
             break
-            
         except Exception as e:
             retry_count += 1
             error_message = str(e)
             logger.error(f"翻译失败（尝试 {retry_count}/{max_retries}，服务商: {model_provider}）: {error_message}", exc_info=True)
             translated_text = f"翻译失败: {error_message}"
-            if hasattr(e, 'response') and e.response is not None:
+            
+            # Only try to access response attributes on exceptions that might have them (like requests.RequestException)
+            if isinstance(e, requests.RequestException) and hasattr(e, 'response') and e.response is not None:
                 try:
                     error_detail = e.response.json()
                     logger.error(f"{model_provider} API 错误详情: {error_detail}")
@@ -430,11 +456,10 @@ def translate_with_mock(text, target_language, api_key=None, model_name=None, pr
         
     # 简单添加目标语言作为前缀
     translated = f"[测试{target_language}] {text[:15]}..."
-    
-    # 如果文本为日语，模拟一些简单的翻译规则
+      # 如果文本为日语，模拟一些简单的翻译规则
     if text and any(ord(c) > 0x3000 for c in text):
         if target_language.lower() in ["chinese", "zh"]:
-            translated = f"中文翻译: {text[:15]}..."
+            translated = f"Chinese translation: {text[:15]}..."
         elif target_language.lower() in ["english", "en"]:
             translated = f"English translation: {text[:15]}..."
     

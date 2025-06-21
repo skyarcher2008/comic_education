@@ -286,7 +286,7 @@ export function handleLoadSession(sessionName) {
                     console.log("重新应用加载的 UI 设置以覆盖 switchImage 的影响:", uiSettings);
 
                     // --- (这里是之前第 4 步的代码块，现在移到这里) ---
-                    $('#targetLanguage').val(uiSettings.targetLanguage || 'zh');
+                    $('#targetLanguage').val(uiSettings.targetLanguage || 'en');
                     $('#sourceLanguage').val(uiSettings.sourceLanguage || 'japan');
                     $('#fontSize').val(uiSettings.fontSize || state.defaultFontSize);
                     $('#autoFontSize').prop('checked', uiSettings.autoFontSize || false);

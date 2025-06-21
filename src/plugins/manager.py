@@ -425,7 +425,7 @@ if __name__ == '__main__':
     try:
         from PIL import Image
         dummy_image = Image.new('RGB', (10, 10))
-        dummy_params = {'target_language': 'zh'}
+        dummy_params = {'target_language': 'en'}
         dummy_coords = [(0,0,5,5)]
         dummy_texts = ["原始文本"]
 

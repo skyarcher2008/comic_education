@@ -21,14 +21,13 @@ class BaiduTranslateInterface:
         self.app_id = app_id
         self.app_key = app_key
         
-    def translate(self, text, from_lang='auto', to_lang='zh', max_retries=3, retry_delay=1):
+    def translate(self, text, from_lang='auto', to_lang='en', max_retries=3, retry_delay=1):
         """
         调用百度翻译API翻译文本
-        
-        参数:
+          参数:
             text (str): 要翻译的文本
             from_lang (str): 源语言，默认为'auto'自动检测
-            to_lang (str): 目标语言，默认为'zh'中文
+            to_lang (str): 目标语言，默认为'en'英文
             max_retries (int): 最大重试次数
             retry_delay (float): 重试延迟时间（秒）
             
@@ -99,9 +98,8 @@ class BaiduTranslateInterface:
         """测试百度翻译API连接"""
         if not self.app_id or not self.app_key:
             return False, "未配置百度翻译API的appid和appkey"
-        
         try:
-            result = self.translate("Hello world", from_lang="en", to_lang="zh")
+            result = self.translate("Hello world", from_lang="en", to_lang="en")
             return True, "百度翻译API连接成功"
         except Exception as e:
             return False, f"百度翻译API连接失败: {str(e)}"
