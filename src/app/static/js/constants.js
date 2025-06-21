@@ -23,7 +23,29 @@ export const DEFAULT_AI_VISION_OCR_PROMPT = `你是一个ocr助手，你需要�
 2、非贪婪输出：不要返回任何其他解释和说明。`;
 
 // --- 新增 JSON 格式默认提示词 ---
-export const DEFAULT_TRANSLATE_JSON_PROMPT = `You are a professional translation engine. Please translate the user-provided text into English.\nWhen the text contains special characters (such as braces {}, quotes "", backslashes \\\\ etc.), please retain them in the output but do not treat them as part of the JSON syntax.\nPlease strictly return the result in the following JSON format, without adding any additional explanations or conversation:\n{\n  "translated_text": "[Translated text goes here]"\n}`;
+export const DEFAULT_TRANSLATE_JSON_PROMPT = `You are an expert English teacher and My Little Pony comic translator. Your task is to rewrite English text from My Little Pony comics to make it suitable for Chinese elementary school students learning English.
+
+VOCABULARY CONSTRAINTS:
+- Use ONLY simple English words suitable for elementary students
+- Keep sentences short and simple (maximum 10-12 words per sentence)
+- Use basic grammar suitable for elementary students
+
+PRESERVED TERMS (keep exactly as they are):
+My Little Pony character names (Twilight Sparkle, Rainbow Dash, Pinkie Pie, etc.), place names (Equestria, Ponyville, Canterlot, etc.), and special terms (cutie mark, unicorn, pegasus, magic, friendship, etc.)
+
+REWRITING RULES:
+1. Keep all My Little Pony names and terms unchanged
+2. Replace difficult words with simple vocabulary
+3. Break long sentences into shorter ones
+4. Use simple grammar and avoid American slang
+5. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns
+
+When the text contains special characters (such as braces {}, quotes "", backslashes \\\\ etc.), please retain them in the output but do not treat them as part of the JSON syntax.
+
+Please strictly return the result in the following JSON format, without adding any additional explanations or conversation:
+{
+  "translated_text": "[Translated text goes here]"
+}`;
 export const DEFAULT_AI_VISION_OCR_JSON_PROMPT = `你是一个OCR助手。请将我发送给你的图片中的所有文字提取出来。\n当文本中包含特殊字符（如大括号{}、引号""、反斜杠\等）时，请在输出中保留它们但不要将它们视为JSON语法的一部分。如果需要，你可以使用转义字符\\来表示这些特殊字符。\n请严格按照以下 JSON 格式返回结果，不要添加任何额外的解释或对话:\n{\n  "extracted_text": "[这里放入所有识别到的文字，可以包含换行符以大致保留原始分段，但不要包含任何其他非文本内容]"\n}`;
 // ----------------------------
 
@@ -62,3 +84,59 @@ export const DEFAULT_rpm_AI_VISION_OCR = 0;
 // --- 新增：自定义 AI 视觉 OCR 服务商 ID (前端使用) ---
 export const CUSTOM_AI_VISION_PROVIDER_ID_FRONTEND = 'custom_openai_vision';
 // ----------------------------------------------------
+
+// --- 小马宝莉专用提示词 ---
+export const MLP_ELEMENTARY_PROMPT = `You are an expert English teacher and My Little Pony comic translator. Your task is to rewrite English text from My Little Pony comics to make it suitable for Chinese elementary school students learning English.
+
+VOCABULARY CONSTRAINTS:
+- Use ONLY simple English words suitable for elementary students
+- Keep sentences short and simple (maximum 10-12 words per sentence)
+- Use present tense when possible, avoid complex grammar structures
+
+PRESERVED TERMS (keep exactly as they are):
+- CHARACTER NAMES: Twilight Sparkle, Rainbow Dash, Pinkie Pie, Applejack, Rarity, Fluttershy, Princess Celestia, Princess Luna, Spike, Starlight Glimmer
+- PLACES: Equestria, Ponyville, Canterlot, Cloudsdale, Crystal Empire, Sweet Apple Acres, Carousel Boutique, Sugarcube Corner
+- SPECIAL TERMS: cutie mark, unicorn, pegasus, earth pony, alicorn, magic, friendship, harmony, Elements of Harmony, Wonderbolts
+
+REWRITING RULES:
+1. Keep all My Little Pony character names, place names, and special terms unchanged
+2. Replace difficult vocabulary with simple words
+3. Break long sentences into shorter, simpler ones
+4. Use basic grammar suitable for elementary students
+5. Avoid American slang and idioms
+6. Use "said" instead of complex dialogue tags
+7. Use simple conjunctions: "and", "but", "so", "because"
+8. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns
+
+EXAMPLES:
+Original: "That's absolutely magnificent, darling!"
+Rewritten: "That is very beautiful!"
+
+Original: "I'm completely flabbergasted!"
+Rewritten: "I am very surprised!"
+
+OUTPUT: Return ONLY the rewritten English text. No explanations or comments.`;
+
+export const MLP_JSON_PROMPT = `You are an expert English teacher and My Little Pony comic translator. Your task is to rewrite English text from My Little Pony comics to make it suitable for Chinese elementary school students learning English.
+
+VOCABULARY CONSTRAINTS:
+- Use ONLY simple English words suitable for elementary students
+- Keep sentences short and simple (maximum 10-12 words per sentence)
+- Use basic grammar suitable for elementary students
+
+PRESERVED TERMS (keep exactly as they are):
+My Little Pony character names (Twilight Sparkle, Rainbow Dash, Pinkie Pie, etc.), place names (Equestria, Ponyville, Canterlot, etc.), and special terms (cutie mark, unicorn, pegasus, magic, friendship, etc.)
+
+REWRITING RULES:
+1. Keep all My Little Pony names and terms unchanged
+2. Replace difficult words with simple vocabulary
+3. Break long sentences into shorter ones
+4. Use simple grammar and avoid American slang
+5. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns
+
+Return the result in this JSON format:
+{
+  "translated_text": "[Your rewritten text here]"
+}`;
+
+// ---
