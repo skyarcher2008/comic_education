@@ -209,22 +209,55 @@ def draw_multiline_text_vertical(draw, text, font, x, y, max_height,
     current_line = ""
     current_column_height = 0
     # Pillow的行高通常由字体大小决定，可微调 line_spacing
-    # font.getsize("A")[1] 或 font.getbbox("A")[3] - font.getbbox("A")[1] 可以估算单行高度
-    # 简单的处理方式：
     line_height_approx = font.size + 1 # 字间距为1像素
 
-    for char in text:
-        # 简单按字符高度估算，更精确的需要 font.getmask(char).size[1]
-        # 但 Pillow 的 ImageFont 没有直接的 get_character_height
-        # 这里我们简化，认为每个字符占用的垂直空间主要是字体大小
+    # 智能处理中英文混合的竖排文本
+    def process_vertical_text(text):
+        """
+        处理竖排文本中的中英文混合情况
+        英文单词在竖排中通常需要特殊处理
+        """
+        processed_chars = []
+        i = 0
+        while i < len(text):
+            char = text[i]
+            
+            # 检查是否为英文字符的开始
+            if char.isascii() and char.isalnum():
+                # 收集连续的英文字符形成单词
+                word = ""
+                while i < len(text) and text[i].isascii() and (text[i].isalnum() or text[i] in "'`-"):
+                    word += text[i]
+                    i += 1
+                
+                # 对于竖排，短英文单词可以保持在同一列
+                # 长英文单词可能需要分列或者旋转
+                if len(word) <= 3:  # 短单词保持在同一列
+                    processed_chars.extend(list(word))
+                else:  # 长单词，每个字符独立处理
+                    processed_chars.extend(list(word))
+            else:
+                processed_chars.append(char)
+                i += 1
+        
+        return processed_chars
+
+    processed_chars = process_vertical_text(text)
+
+    for char in processed_chars:
+        # 简单按字符高度估算
         if current_column_height + line_height_approx <= max_height:
             current_line += char
             current_column_height += line_height_approx
         else:
-            lines.append(current_line)
+            if current_line:  # 只有当前行不为空时才添加
+                lines.append(current_line)
             current_line = char
             current_column_height = line_height_approx
-    lines.append(current_line)
+    
+    # 添加最后一行（如果不为空）
+    if current_line:
+        lines.append(current_line)
 
     # 列宽也基于字体大小估算
     column_width_approx = font.size + 3 # 假设列间距
@@ -349,21 +382,108 @@ def draw_multiline_text_horizontal(draw, text, font, x, y, max_width,
     lines = []
     current_line = ""
     current_line_width = 0
+    space_width = font.getbbox(' ')[2] - font.getbbox(' ')[0]
 
-    for char in text:
-        bbox = font.getbbox(char)
-        char_width = bbox[2] - bbox[0]
-        space_width = font.getbbox(' ')[2] - font.getbbox(' ')[0]
+    # 智能分词：支持中英文混合文本，保护英文单词不被分割
+    def smart_tokenize(text):
+        """
+        智能分词，将文本分解为单词和字符的混合序列
+        英文单词保持完整，中文字符独立处理
+        """
+        import re
+        tokens = []
+        # 匹配英文单词（包括数字、标点符号组合）和其他字符
+        pattern = r'[a-zA-Z0-9]+(?:[\'`]?[a-zA-Z0-9]+)*|[^\w\s]|\S'
+        
+        i = 0
+        while i < len(text):
+            if text[i].isspace():
+                # 处理空格
+                tokens.append(text[i])
+                i += 1
+            elif text[i].isascii() and (text[i].isalnum() or text[i] in "'`-"):
+                # 英文单词（包括连字符、撇号等）
+                word = ""
+                while i < len(text) and (text[i].isalnum() or text[i] in "'`-"):
+                    word += text[i]
+                    i += 1
+                tokens.append(word)
+            else:
+                # 中文字符或其他单字符
+                tokens.append(text[i])
+                i += 1
+        
+        return tokens
 
-        if current_line_width + char_width <= max_width:
-            current_line += char
-            current_line_width += char_width
+    tokens = smart_tokenize(text)
+    
+    for token in tokens:
+        # 计算token宽度
+        token_bbox = font.getbbox(token)
+        token_width = token_bbox[2] - token_bbox[0]
+        
+        if token.isspace():
+            # 处理空格
+            if current_line_width + space_width <= max_width:
+                current_line += token
+                current_line_width += space_width
+            else:
+                # 空格导致换行，忽略这个空格
+                if current_line:
+                    lines.append(current_line)
+                    current_line = ""
+                    current_line_width = 0
         else:
-            lines.append(current_line)
-            current_line = char
-            current_line_width = char_width
+            # 处理非空格token
+            if current_line_width + token_width <= max_width:
+                # 可以放在当前行
+                current_line += token
+                current_line_width += token_width
+            else:
+                # 当前行容不下，需要换行
+                if current_line:
+                    lines.append(current_line)
+                
+                # 检查token本身是否超过最大宽度
+                if token_width > max_width:
+                    # token太长，需要按字符分割（只对非英文单词执行）
+                    if token.isascii() and token.isalnum():
+                        # 英文单词太长，尝试保持完整但强制换行
+                        logger.warning(f"英文单词 '{token}' 过长，超出气泡宽度，强制显示")
+                        current_line = token
+                        current_line_width = token_width
+                    else:
+                        # 非英文单词，按字符分割
+                        char_line = ""
+                        char_line_width = 0
+                        
+                        for char in token:
+                            char_bbox = font.getbbox(char)
+                            char_width = char_bbox[2] - char_bbox[0]
+                            
+                            if char_line_width + char_width <= max_width:
+                                char_line += char
+                                char_line_width += char_width
+                            else:
+                                if char_line:
+                                    lines.append(char_line)
+                                char_line = char
+                                char_line_width = char_width
+                        
+                        if char_line:
+                            current_line = char_line
+                            current_line_width = char_line_width
+                        else:
+                            current_line = ""
+                            current_line_width = 0
+                else:
+                    # token长度合适，开始新行
+                    current_line = token
+                    current_line_width = token_width
 
-    lines.append(current_line)
+    # 添加最后一行
+    if current_line:
+        lines.append(current_line)
 
     current_y = y
     line_height = font.size + 5
