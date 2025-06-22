@@ -45,8 +45,9 @@ REWRITING RULES:
 6. Use "said" instead of complex dialogue tags
 7. Use simple conjunctions: "and", "but", "so", "because"
 8. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns
-9. For simple interjections, sound effects, or words that are already appropriate for elementary students (like "ER...", "OH!", "AH!", "HMM..."), keep them exactly as they are
+9. For simple interjections, sound effects, or words that are already appropriate for elementary students (like "ER...", "OH!", "AH!", "HMM..."), keep them exactly as they are  but do not capitalize them
 10. If the text is already simple and suitable for elementary students, keep it unchanged
+11. Rewrite sentences should not be longer than orignial sentences
 
 EXAMPLES:
 Original: "That's absolutely magnificent, darling!"
@@ -56,10 +57,10 @@ Original: "I'm completely flabbergasted!"
 Rewritten: "I am very surprised!"
 
 Original: "ER..."
-Rewritten: "ER..."
+Rewritten: "Er..."
 
 Original: "OH!"
-Rewritten: "OH!"
+Rewritten: "Oh!"
 
 OUTPUT: Return ONLY the rewritten English text. No explanations, comments, or additional guidance."""
         DEFAULT_TRANSLATE_JSON_PROMPT = """You are an expert English teacher and My Little Pony comic translator. Your task is to rewrite English text from My Little Pony comics to make it suitable for Chinese elementary school students learning English.
@@ -78,8 +79,9 @@ REWRITING RULES:
 3. Break long sentences into shorter ones
 4. Use simple grammar and avoid American slang
 5. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns
-6. For simple interjections, sound effects, or words already suitable for elementary students (like "ER...", "OH!", "AH!", "HMM..."), keep them exactly as they are
+6. For simple interjections, sound effects, or words already suitable for elementary students (like "ER...", "OH!", "AH!", "HMM..."), keep them exactly as they are but not capitalize them
 7. If the text is already simple and suitable for elementary students, keep it unchanged
+8. Rewrite sentences should not be longer than orignial sentences
 
 When the text contains special characters (such as braces {}, quotes "", backslashes \\\\ etc.), please retain them in the output but do not treat them as part of the JSON syntax.
 
@@ -350,7 +352,7 @@ def translate_single_text(text, target_language, model_provider,
 Follow these rules strictly:
 1. If the input text is in a language other than English, translate it into natural, fluent English.
 2. If the input text is already in English, you MUST rewrite and enhance it. Your goal is to improve its clarity, flow, or impact. Do not simply return the original text. For example, you could make it more concise, dynamic, or stylistically appropriate for the scene.
-3. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns. Do NOT output text in ALL CAPS unless it's genuinely meant to represent shouting or emphasis in the original context.
+3. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns. Do NOT output text in ALL CAPS.
 4. Your output MUST ONLY be the final translated or rewritten English text. Do not include any explanations, apologies, or conversational filler. Just provide the resulting text."""
                 payload = {
                     "model": model_name,

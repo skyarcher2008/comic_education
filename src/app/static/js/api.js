@@ -578,3 +578,16 @@ export function uploadFontApi(fontFile, successCallback, errorCallback) {
 
 // --- TODO: 在后续步骤中添加重命名的 API 调用函数 ---
 // export function renameSessionApi(oldName, newName) { ... }
+
+/**
+ * 自动保存文本文件到服务器
+ * @param {Array} images - 图片数据数组
+ * @returns {Promise<object>} - 返回包含保存结果的 Promise
+ */
+export function saveTextFileApi(images) {
+    console.log('调用自动保存文本文件API，图片数量:', images.length);
+    
+    return makeApiRequest('/api/save_text_file', 'POST', {
+        images: images
+    });
+}

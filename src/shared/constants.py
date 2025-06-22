@@ -28,7 +28,8 @@ REWRITING RULES:
 7. Avoid American slang and idioms
 8. Use "said" instead of complex dialogue tags
 9. Use simple conjunctions: "and", "but", "so", "because"
-10. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns
+10. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns. Do NOT output text in ALL CAPS
+11. Rewrite sentences should not be longer than orignial sentences
 
 EXAMPLES:
 Original: "That's absolutely magnificent, darling!"
@@ -38,13 +39,13 @@ Original: "I'm completely flabbergasted!"
 Rewritten: "I am very surprised!"
 
 Original: "ER..."
-Rewritten: ER...
+Rewritten: Er...
 
 Original: "OH!"
-Rewritten: OH!
+Rewritten: Ohh!
 
 Original: "HMM..."
-Rewritten: HMM...
+Rewritten: Hmm...
 
 OUTPUT: Return ONLY the rewritten English text. Never add explanations, comments, or additional guidance. For simple interjections, return them exactly as provided."""
 DEFAULT_TEXTBOX_PROMPT = """You are an expert language teacher and translator. Please translate the provided non-English content into English and explain why you translated it that way, along with key language points to learn from the text."""
@@ -233,13 +234,14 @@ PRESERVED TERMS (keep exactly as they are):
 My Little Pony character names (Twilight Sparkle, Rainbow Dash, Pinkie Pie, etc.), place names (Equestria, Ponyville, Canterlot, etc.), and special terms (cutie mark, unicorn, pegasus, magic, friendship, etc.)
 
 REWRITING RULES:
-1. For simple interjections or sounds (ER..., OH!, AH!, HMM..., YEAH!, NO!, etc.) - return exactly as provided
+1. For simple interjections or sounds (ER..., OH!, AH!, HMM..., YEAH!, NO!, etc.) - return exactly as provided but not capitalized
 2. For already simple text suitable for elementary students - return exactly as provided
 3. Keep all My Little Pony names and terms unchanged
 4. Replace difficult words with simple vocabulary
 5. Break long sentences into shorter ones
 6. Use simple grammar and avoid American slang
-7. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns
+7. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns. Do NOT output text in ALL CAPS
+8. Rewrite sentences should not be longer than orignial sentences
 
 When the text contains special characters (such as braces {}, quotes "", backslashes \\ etc.), please retain them in the output but do not treat them as part of the JSON syntax.
 
@@ -278,7 +280,8 @@ REWRITING RULES:
 5. Avoid American slang and idioms
 6. Use "said" instead of complex dialogue tags
 7. Use simple conjunctions: "and", "but", "so", "because"
-8. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns
+8. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns. Do NOT output text in ALL CAPS
+9. Rewrite sentences should not be longer than orignial sentences
 
 EXAMPLES:
 Original: "That's absolutely magnificent, darling!"
@@ -304,7 +307,8 @@ REWRITING RULES:
 2. Replace difficult words with simple vocabulary
 3. Break long sentences into shorter ones
 4. Use simple grammar and avoid American slang
-5. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns
+5. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns. Do NOT output text in ALL CAPS
+6. Rewrite sentences should not be longer than orignial sentences
 
 Return the result in this JSON format:
 {

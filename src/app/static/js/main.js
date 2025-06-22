@@ -1131,12 +1131,14 @@ export function translateAllImages() {
                      api.saveModelInfoApi(modelProvider, modelName);
                  }
             }
-            
-            // 设置批量翻译状态为已完成
+              // 设置批量翻译状态为已完成
             state.setBatchTranslationInProgress(false);
             
             // 批量翻译完成后执行一次自动存档
             session.triggerAutoSave();
+            
+            // 自动保存文本文件
+            autoSaveTextFile();
             return;
         }
 
@@ -2102,8 +2104,160 @@ export function exportText() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+      ui.showGeneralMessage("文本导出成功！", "success");
+}
+
+/**
+ * 导出纯文本文件，包含所有图片的原文和译文，并标记页码信息
+ */
+export function exportPlainText() {
+    const allImages = state.images;
+    if (allImages.length === 0) {
+        ui.showGeneralMessage("没有可导出的图片文本", "warning");
+        return;
+    }
+
+    // 准备导出文本内容
+    let textContent = "漫画文本导出\n";
+    textContent += "=" + "=".repeat(50) + "\n\n";
     
-    ui.showGeneralMessage("文本导出成功！", "success");
+    let totalBubbles = 0;
+    let totalImages = 0;
+    
+    // 遍历所有图片
+    for (let imageIndex = 0; imageIndex < allImages.length; imageIndex++) {
+        const image = allImages[imageIndex];
+        const bubbleTexts = image.bubbleTexts || [];
+        const originalTexts = image.originalTexts || [];
+        
+        // 跳过没有文本的图片
+        if (originalTexts.length === 0 && bubbleTexts.length === 0) {
+            continue;
+        }
+        
+        totalImages++;
+        
+        // 确定图片标识（优先使用文件名，否则使用索引）
+        let imageIdentifier = `第${imageIndex + 1}页`;
+        if (image.file && image.file.name) {
+            imageIdentifier = `第${imageIndex + 1}页 (${image.file.name})`;
+        } else if (image.filename) {
+            imageIdentifier = `第${imageIndex + 1}页 (${image.filename})`;
+        }
+        
+        textContent += `${imageIdentifier}\n`;
+        textContent += "-".repeat(imageIdentifier.length) + "\n";
+        
+        // 获取文本的最大长度，用于对齐
+        const maxLength = Math.max(originalTexts.length, bubbleTexts.length);
+        
+        if (maxLength === 0) {
+            textContent += "（无文本内容）\n\n";
+            continue;
+        }
+        
+        // 遍历每个气泡的文本
+        for (let bubbleIndex = 0; bubbleIndex < maxLength; bubbleIndex++) {
+            const original = originalTexts[bubbleIndex] || '';
+            const translated = bubbleTexts[bubbleIndex] || '';
+            
+            totalBubbles++;
+            
+            // 如果只有原文没有译文
+            if (original && !translated) {
+                textContent += `${bubbleIndex + 1}. ${original}\n`;
+                textContent += `   → （未翻译）\n\n`;
+            }
+            // 如果只有译文没有原文
+            else if (!original && translated) {
+                textContent += `${bubbleIndex + 1}. （无原文）\n`;
+                textContent += `   → ${translated}\n\n`;
+            }
+            // 如果原文和译文都有
+            else if (original && translated) {
+                textContent += `${bubbleIndex + 1}. ${original}\n`;
+                textContent += `   → ${translated}\n\n`;
+            }
+            // 如果原文和译文都没有（理论上不应该发生）
+            else {
+                textContent += `${bubbleIndex + 1}. （空内容）\n\n`;
+            }
+        }
+        
+        textContent += "\n";
+    }
+    
+    // 添加统计信息
+    textContent += "=" + "=".repeat(50) + "\n";
+    textContent += `导出统计：共 ${totalImages} 张图片，${totalBubbles} 个文本气泡\n`;
+    textContent += `导出时间：${new Date().toLocaleString()}\n`;
+    
+    // 创建Blob并触发下载
+    const blob = new Blob([textContent], { type: 'text/plain; charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    
+    // 生成文件名（包含时间戳）
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:]/g, '-');
+    a.download = `comic_text_${timestamp}.txt`;
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+      ui.showGeneralMessage(`纯文本导出成功！共导出 ${totalImages} 张图片的文本`, "success");
+}
+
+/**
+ * 自动保存文本文件到服务器
+ */
+export function autoSaveTextFile() {
+    const allImages = state.images;
+    if (allImages.length === 0) {
+        console.log("没有图片数据，跳过自动保存文本文件");
+        return;
+    }
+    
+    // 检查是否有文本内容
+    let hasText = false;
+    for (const image of allImages) {
+        if ((image.originalTexts && image.originalTexts.length > 0) ||
+            (image.bubbleTexts && image.bubbleTexts.length > 0)) {
+            hasText = true;
+            break;
+        }
+    }
+    
+    if (!hasText) {
+        console.log("没有文本内容，跳过自动保存文本文件");
+        return;
+    }
+    
+    console.log("开始自动保存文本文件...");
+    
+    // 准备图片数据
+    const imagesData = allImages.map((image, index) => ({
+        originalTexts: image.originalTexts || [],
+        bubbleTexts: image.bubbleTexts || [],
+        filename: image.file?.name || image.filename || `image_${index + 1}`,
+        name: image.file?.name || image.filename
+    }));
+    
+    // 调用API保存文件
+    api.saveTextFileApi(imagesData)
+        .then(response => {
+            if (response.success) {
+                ui.showGeneralMessage(response.message, "success");
+                console.log(`文本文件自动保存成功: ${response.file_path}`);
+                console.log(`统计信息: ${response.statistics.total_images} 张图片, ${response.statistics.total_bubbles} 个文本气泡`);
+            } else {
+                console.error("自动保存文本文件失败:", response.error);
+            }
+        })
+        .catch(error => {
+            console.error("自动保存文本文件API调用失败:", error);
+        });
 }
 
 /**

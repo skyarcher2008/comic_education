@@ -1236,8 +1236,7 @@ def clean_temp_files_api():
                         shutil.rmtree(dir_path)
                         removed_count += 1
                         logger.info(f"已删除过期临时目录: {dir_path}")
-                    except Exception as e:
-                        logger.error(f"删除临时目录失败: {dir_path} - {str(e)}")
+                    except Exception as e:                        logger.error(f"删除临时目录失败: {dir_path} - {str(e)}")
         
         return jsonify({
             'success': True,
@@ -1247,3 +1246,79 @@ def clean_temp_files_api():
     except Exception as e:
         logger.error(f"清理临时文件失败: {str(e)}")
         return jsonify({'error': f'清理临时文件失败: {str(e)}'}), 500
+
+@system_bp.route('/save_text_file', methods=['POST'])
+def save_text_file_api():
+    """自动保存文本文件到项目目录"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': '无效的请求数据'}), 400
+        
+        images_data = data.get('images', [])
+        if not images_data:
+            return jsonify({'error': '没有图片数据'}), 400
+        
+        # 准备导出文本内容
+        text_content = "漫画文本导出\n" + "=" * 50 + "\n\n"
+        total_bubbles = 0
+        total_images = 0
+        
+        # 遍历所有图片
+        for image_index, image_data in enumerate(images_data):
+            bubble_texts = image_data.get('bubbleTexts', [])
+            original_texts = image_data.get('originalTexts', [])
+            
+            if not original_texts and not bubble_texts:
+                continue
+                
+            total_images += 1
+            image_identifier = f"第{image_index + 1}页"
+            filename = image_data.get('filename') or image_data.get('name')
+            if filename:
+                image_identifier = f"第{image_index + 1}页 ({filename})"
+            
+            text_content += f"{image_identifier}\n" + "-" * len(image_identifier) + "\n"
+            max_length = max(len(original_texts), len(bubble_texts))
+            
+            for bubble_index in range(max_length):
+                original = original_texts[bubble_index] if bubble_index < len(original_texts) else ''
+                translated = bubble_texts[bubble_index] if bubble_index < len(bubble_texts) else ''
+                total_bubbles += 1
+                
+                if original and translated:
+                    text_content += f"{bubble_index + 1}. {original}\n   → {translated}\n\n"
+                elif original and not translated:
+                    text_content += f"{bubble_index + 1}. {original}\n   → （未翻译）\n\n"
+                elif not original and translated:
+                    text_content += f"{bubble_index + 1}. （无原文）\n   → {translated}\n\n"
+                else:
+                    text_content += f"{bubble_index + 1}. （空内容）\n\n"
+            text_content += "\n"
+        
+        # 添加统计信息
+        import datetime
+        text_content += "=" * 50 + "\n"
+        text_content += f"导出统计：共 {total_images} 张图片，{total_bubbles} 个文本气泡\n"
+        text_content += f"导出时间：{datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
+        
+        # 保存文件到data/output目录
+        output_dir = os.path.join(os.getcwd(), 'data', 'output')
+        os.makedirs(output_dir, exist_ok=True)
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        filename = f"comic_text_{timestamp}.txt"
+        file_path = os.path.join(output_dir, filename)
+        
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(text_content)
+        
+        return jsonify({
+            'success': True,
+            'message': f'文本文件已自动保存到：data/output/{filename}',
+            'file_path': file_path,
+            'statistics': {'total_images': total_images, 'total_bubbles': total_bubbles}
+        })
+        
+    except Exception as e:
+        logger.error(f"保存文本文件失败: {str(e)}")
+        return jsonify({'error': f'保存文本文件失败: {str(e)}'}), 500

@@ -56,9 +56,9 @@ export function bindEventListeners() {
     // --- 下载 ---
     $("#downloadButton").on('click', handleDownloadCurrent);
     $("#downloadAllImagesButton").on('click', handleDownloadAll);
-    
-    // --- 导出和导入文本 ---
+      // --- 导出和导入文本 ---
     $("#exportTextButton").on('click', handleExportText);
+    $("#exportPlainTextButton").on('click', handleExportPlainText);
     $("#importTextButton").on('click', handleImportTextClick);
     $("#importTextFileInput").on('change', handleImportTextFile);
 
@@ -1848,6 +1848,13 @@ function handleAiVisionPromptModeChange() {
  */
 function handleExportText() {
     main.exportText();
+}
+
+/**
+ * 处理导出纯文本按钮点击
+ */
+function handleExportPlainText() {
+    main.exportPlainText();
 }
 
 /**
