@@ -16,6 +16,7 @@
     "qwen:7b"
   ],
   "deepseek": [
+    "deepseek-reasoner",
     "deepseek-chat"
   ]
 }

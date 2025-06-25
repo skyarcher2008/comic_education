@@ -21,74 +21,35 @@ try:
     from src.shared import constants # 导入常量
     from src.interfaces.baidu_translate_interface import baidu_translate # 导入百度翻译接口
 except ImportError as e:
-    print(f"警告: 无法导入相关模块: {e}")
-    # 为测试创建默认常量
+    print(f"警告: 无法导入相关模块: {e}")    # 为测试创建默认常量
     class Constants:
-        DEFAULT_PROMPT = """You are an expert English teacher and My Little Pony comic translator. Your task is to rewrite English text from My Little Pony comics to make it suitable for Chinese elementary school students learning English.
+        DEFAULT_PROMPT = """Convert ALL CAPS text to lowercase and simplify for Chinese elementary students:
 
-VOCABULARY CONSTRAINTS:
-- Use ONLY simple English words suitable for elementary students
-- Keep sentences short and simple (maximum 10-12 words per sentence)
-- Use present tense when possible, avoid complex grammar structures
+1. Convert ALL CAPS to proper case (only first letter capitalized)
+2. Rewrite My Little Pony dialogue to be simple and suitable for Chinese elementary English learners
+3. Output ONLY the simplified lowercase text, NO explanations or notes
 
-PRESERVED TERMS (keep exactly as they are):
-- CHARACTER NAMES: Twilight Sparkle, Rainbow Dash, Pinkie Pie, Applejack, Rarity, Fluttershy, Princess Celestia, Princess Luna, Spike, Starlight Glimmer
-- PLACES: Equestria, Ponyville, Canterlot, Cloudsdale, Crystal Empire, Sweet Apple Acres, Carousel Boutique, Sugarcube Corner
-- SPECIAL TERMS: cutie mark, unicorn, pegasus, earth pony, alicorn, magic, friendship, harmony, Elements of Harmony, Wonderbolts
+Examples:
+"TIME TO KICK SOME FLANK!" → "Time to go fast!"
+"I DON'T THINK I CAN DO IT!" → "I don't think I can do it!"
 
-REWRITING RULES:
-1. Keep all My Little Pony character names, place names, and special terms unchanged
-2. Replace difficult vocabulary with simple words
-3. Break long sentences into shorter, simpler ones
-4. Use basic grammar suitable for elementary students
-5. Avoid American slang and idioms
-6. Use "said" instead of complex dialogue tags
-7. Use simple conjunctions: "and", "but", "so", "because"
-8. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns
-9. For simple interjections, sound effects, or words that are already appropriate for elementary students (like "ER...", "OH!", "AH!", "HMM..."), keep them exactly as they are  but do not capitalize them
-10. If the text is already simple and suitable for elementary students, keep it unchanged
-11. Rewrite sentences should not be longer than orignial sentences
+Output only the simplified text."""
 
-EXAMPLES:
-Original: "That's absolutely magnificent, darling!"
-Rewritten: "That is very beautiful!"
+        DEFAULT_TRANSLATE_JSON_PROMPT = """Convert ALL CAPS text to lowercase and simplify for Chinese elementary students:
 
-Original: "I'm completely flabbergasted!"
-Rewritten: "I am very surprised!"
+1. Convert ALL CAPS to proper case (only first letter capitalized)
+2. Rewrite My Little Pony dialogue to be simple and suitable for Chinese elementary English learners
+3. Output ONLY JSON format, NO explanations or notes
 
-Original: "ER..."
-Rewritten: "Er..."
+Examples:
+"TIME TO KICK SOME FLANK!" → {"translated_text": "Time to go fast!"}
+"I DON'T THINK I CAN DO IT!" → {"translated_text": "I don't think I can do it!"}
 
-Original: "OH!"
-Rewritten: "Oh!"
-
-OUTPUT: Return ONLY the rewritten English text. No explanations, comments, or additional guidance."""
-        DEFAULT_TRANSLATE_JSON_PROMPT = """You are an expert English teacher and My Little Pony comic translator. Your task is to rewrite English text from My Little Pony comics to make it suitable for Chinese elementary school students learning English.
-
-VOCABULARY CONSTRAINTS:
-- Use ONLY simple English words suitable for elementary students
-- Keep sentences short and simple (maximum 10-12 words per sentence)
-- Use basic grammar suitable for elementary students
-
-PRESERVED TERMS (keep exactly as they are):
-My Little Pony character names (Twilight Sparkle, Rainbow Dash, Pinkie Pie, etc.), place names (Equestria, Ponyville, Canterlot, etc.), and special terms (cutie mark, unicorn, pegasus, magic, friendship, etc.)
-
-REWRITING RULES:
-1. Keep all My Little Pony names and terms unchanged
-2. Replace difficult words with simple vocabulary
-3. Break long sentences into shorter ones
-4. Use simple grammar and avoid American slang
-5. Use proper capitalization: Only capitalize the first letter of sentences and proper nouns
-6. For simple interjections, sound effects, or words already suitable for elementary students (like "ER...", "OH!", "AH!", "HMM..."), keep them exactly as they are but not capitalize them
-7. If the text is already simple and suitable for elementary students, keep it unchanged
-8. Rewrite sentences should not be longer than orignial sentences
-
-When the text contains special characters (such as braces {}, quotes "", backslashes \\\\ etc.), please retain them in the output but do not treat them as part of the JSON syntax.
-
-Please strictly return the result in the following JSON format, without adding any additional explanations or conversation:
+Return only JSON:
 {
-  "translated_text": "[Translated text goes here]"
+  "translated_text": "[simplified lowercase text]"
 }"""
+
         BAIDU_TRANSLATE_ENGINE_ID = 'baidu_translate'
         YOUDAO_TRANSLATE_ENGINE_ID = 'youdao_translate'
         CUSTOM_OPENAI_PROVIDER_ID = 'custom_openai'
