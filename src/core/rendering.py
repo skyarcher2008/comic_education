@@ -505,7 +505,32 @@ def draw_multiline_text_horizontal(draw, text, font, x, y, max_width,
         center_y_rot = y + total_text_height / 2
 
     for line in lines:
-        current_x = x
+        # 计算当前行的实际宽度，用于居中对齐
+        # 需要考虑特殊字符可能使用不同字体的情况
+        line_width = 0
+        for char in line:
+            # 为计算宽度选择正确的字体
+            char_font = font
+            if char in SPECIAL_CHARS:
+                if special_font is None:
+                    try:
+                        special_font = get_font(NOTOSANS_FONT_PATH, font_size)
+                    except Exception as e:
+                        logger.error(f"加载NotoSans字体失败: {e}，回退到普通字体")
+                        special_font = font
+                
+                if special_font is not None:
+                    char_font = special_font
+            
+            char_bbox = char_font.getbbox(char)
+            line_width += char_bbox[2] - char_bbox[0]
+        
+        # 计算居中对齐的起始x坐标
+        if line_width < max_width:
+            current_x = x + (max_width - line_width) / 2
+        else:
+            current_x = x  # 如果行宽度超过最大宽度，保持左对齐
+        
         for char in line:
             # 检查是否为需要特殊字体的字符
             current_font = font
