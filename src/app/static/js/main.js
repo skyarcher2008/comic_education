@@ -900,6 +900,10 @@ export function translateCurrentImage() {
         textStrokeWidth: state.textStrokeWidth,         // 从 state.js 获取
         // === 新增描边参数 END ===
         
+        // === 新增校对参数 START ===
+        enable_proofreading: $('#enableCapitalizationProofreading').prop('checked'),
+        // === 新增校对参数 END ===
+        
         rpm_limit_translation: state.rpmLimitTranslation,
         rpm_limit_ai_vision_ocr: state.rpmLimitAiVisionOcr,
         use_json_format_translation: state.isTranslateJsonMode,
@@ -1187,6 +1191,10 @@ export function translateAllImages() {
             textStrokeColor: textStrokeColor,
             textStrokeWidth: textStrokeWidth,
             // === 新增：传递描边参数 END ===
+            
+            // === 新增：传递校对参数 START ===
+            enable_proofreading: $('#enableCapitalizationProofreading').prop('checked'),
+            // === 新增：传递校对参数 END ===
             
             use_json_format_translation: aktuellenTranslateJsonMode,
             use_json_format_ai_vision_ocr: aktuellenAiVisionOcrJsonMode

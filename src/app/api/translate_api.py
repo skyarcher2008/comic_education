@@ -76,6 +76,26 @@ def translate_image():
         logger.info(f"描边设置: enable={enable_text_stroke}, color={text_stroke_color}, width={text_stroke_width}")
         # === 新增：获取描边参数 END ===
         
+        # === 新增：获取校对参数 START ===
+        enable_proofreading = data.get('enable_proofreading', False)
+        proofreading_provider = data.get('proofreading_provider')
+        proofreading_api_key = data.get('proofreading_api_key')
+        proofreading_model_name = data.get('proofreading_model_name')
+        proofreading_custom_base_url = data.get('proofreading_custom_base_url')
+        proofreading_rpm_limit = data.get('proofreading_rpm_limit')
+        
+        # 校对参数转换和验证
+        try:
+            if proofreading_rpm_limit is not None:
+                proofreading_rpm_limit = int(proofreading_rpm_limit)
+                if proofreading_rpm_limit < 0:
+                    proofreading_rpm_limit = None
+        except (ValueError, TypeError):
+            proofreading_rpm_limit = None
+        
+        logger.info(f"校对设置: enable={enable_proofreading}, provider={proofreading_provider or '使用翻译相同'}, model={proofreading_model_name or '使用翻译相同'}")
+        # === 新增：获取校对参数 END ===
+        
         logger.info("------------------------")
         
         image_data = data.get('image')
@@ -251,8 +271,16 @@ def translate_image():
                 # === 新增：传递描边参数给 processing START ===
                 enable_text_stroke=enable_text_stroke,
                 text_stroke_color=text_stroke_color,
-                text_stroke_width=text_stroke_width
+                text_stroke_width=text_stroke_width,
                 # === 新增：传递描边参数给 processing END ===
+                # === 新增：传递校对参数给 processing START ===
+                enable_proofreading=enable_proofreading,
+                proofreading_provider=proofreading_provider,
+                proofreading_api_key=proofreading_api_key,
+                proofreading_model_name=proofreading_model_name,
+                proofreading_custom_base_url=proofreading_custom_base_url,
+                proofreading_rpm_limit=proofreading_rpm_limit
+                # === 新增：传递校对参数给 processing END ===
                 # ------------------------------------
             )
             
@@ -304,8 +332,16 @@ def translate_image():
                 # === 新增：传递描边参数给 processing START ===
                 enable_text_stroke=enable_text_stroke,
                 text_stroke_color=text_stroke_color,
-                text_stroke_width=text_stroke_width
+                text_stroke_width=text_stroke_width,
                 # === 新增：传递描边参数给 processing END ===
+                # === 新增：传递校对参数给 processing START ===
+                enable_proofreading=enable_proofreading,
+                proofreading_provider=proofreading_provider,
+                proofreading_api_key=proofreading_api_key,
+                proofreading_model_name=proofreading_model_name,
+                proofreading_custom_base_url=proofreading_custom_base_url,
+                proofreading_rpm_limit=proofreading_rpm_limit
+                # === 新增：传递校对参数给 processing END ===
                 # ------------------------------------
             )
             

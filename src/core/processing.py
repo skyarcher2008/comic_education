@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from src.core.detection import get_bubble_coordinates
 from src.core.ocr import recognize_text_in_bubbles
 from src.core.translation import translate_text_list
+from src.core.proofreading import proofread_text_list_capitalization  # 新增：校对模块
 from src.core.inpainting import inpaint_bubbles
 from src.core.rendering import render_all_bubbles, calculate_auto_font_size, get_font # 需要渲染和计算函数
 
@@ -68,8 +69,16 @@ def process_image_translation(
     # === 新增描边参数 START ===
     enable_text_stroke=constants.DEFAULT_TEXT_STROKE_ENABLED,
     text_stroke_color=constants.DEFAULT_TEXT_STROKE_COLOR,
-    text_stroke_width=constants.DEFAULT_TEXT_STROKE_WIDTH
+    text_stroke_width=constants.DEFAULT_TEXT_STROKE_WIDTH,
     # === 新增描边参数 END ===
+    # === 新增校对参数 START ===
+    enable_proofreading=False,  # 是否启用LLM校对
+    proofreading_provider=None, # 校对使用的模型提供商，None表示使用翻译相同的提供商
+    proofreading_api_key=None,  # 校对API密钥，None表示使用翻译相同的密钥
+    proofreading_model_name=None, # 校对模型名称，None表示使用翻译相同的模型
+    proofreading_custom_base_url=None, # 校对自定义API地址，None表示使用翻译相同的地址
+    proofreading_rpm_limit=None  # 校对请求频率限制，None表示使用翻译相同的限制
+    # === 新增校对参数 END ===
     # ^^^^^^ 结束新增 ^^^^^^
     ):
     """
@@ -282,6 +291,62 @@ def process_image_translation(
                 except Exception as hook_e:
                      logger.error(f"执行 {AFTER_TRANSLATION} 钩子时出错: {hook_e}", exc_info=True)
                 # ----------------------------------
+                
+                # === 新增：LLM校对步骤 START ===
+                if enable_proofreading and target_language.lower() in ['english', 'en']:
+                    logger.info("步骤 3.5: 开始LLM校对...")
+                    proofreading_start_time = time.time()
+                    
+                    # 准备校对参数
+                    proof_provider = proofreading_provider or model_provider
+                    proof_api_key = proofreading_api_key or api_key
+                    proof_model_name = proofreading_model_name or model_name
+                    proof_base_url = proofreading_custom_base_url or custom_base_url
+                    proof_rpm_limit = proofreading_rpm_limit or rpm_limit_translation
+                    
+                    try:
+                        # 校对气泡文本
+                        logger.info(f"校对 {len(translated_bubble_texts)} 个气泡文本...")
+                        proofread_bubble_texts = proofread_text_list_capitalization(
+                            translated_bubble_texts,
+                            model_provider=proof_provider,
+                            api_key=proof_api_key,
+                            model_name=proof_model_name,
+                            custom_base_url=proof_base_url,
+                            rpm_limit=proof_rpm_limit
+                        )
+                        
+                        # 校对文本框文本（如果不同）
+                        if translated_textbox_texts != translated_bubble_texts:
+                            logger.info(f"校对 {len(translated_textbox_texts)} 个文本框文本...")
+                            proofread_textbox_texts = proofread_text_list_capitalization(
+                                translated_textbox_texts,
+                                model_provider=proof_provider,
+                                api_key=proof_api_key,
+                                model_name=proof_model_name,
+                                custom_base_url=proof_base_url,
+                                rpm_limit=proof_rpm_limit
+                            )
+                        else:
+                            proofread_textbox_texts = proofread_bubble_texts
+                        
+                        # 更新翻译结果
+                        translated_bubble_texts = proofread_bubble_texts
+                        translated_textbox_texts = proofread_textbox_texts
+                        logger.info(f"LLM校对完成 (耗时: {time.time() - proofreading_start_time:.2f}s)")
+                        
+                    except Exception as proof_e:
+                        logger.error(f"LLM校对过程出错: {proof_e}", exc_info=True)
+                        if ignore_connection_errors:
+                            logger.warning("校对出错，继续使用原翻译结果")
+                        else:
+                            raise
+                else:
+                    if enable_proofreading:
+                        logger.info("跳过LLM校对：目标语言非英文")
+                    else:
+                        logger.debug("LLM校对未启用")
+                # === LLM校对步骤 END ===
             except Exception as e:
                 logger.error(f"翻译过程发生错误: {e}", exc_info=True)
                 if ignore_connection_errors:
