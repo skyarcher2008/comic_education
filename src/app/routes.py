@@ -71,6 +71,11 @@ def test_lama_page():
     """显示LAMA测试页面"""
     return render_template('test_lama.html')
 
+@main_bp.route('/vocabulary_analysis')
+def vocabulary_analysis():
+    """显示词汇分析页面"""
+    return render_template('vocabulary_analysis.html')
+
 @main_bp.route('/pic/<path:filename>')
 def serve_pic(filename):
     pic_dir = resource_path('pic')  # 获取pic目录的绝对路径

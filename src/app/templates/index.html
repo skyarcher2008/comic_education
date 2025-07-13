@@ -27,6 +27,7 @@
             <div class="header-links">
                 <span class="open-source-notice">本项目完全开源免费，请勿上当受骗</span>
                 <a href="http://www.mashirosaber.top" target="_blank" class="tutorial-link">使用教程</a>
+                <a href="{{ url_for('main.vocabulary_analysis') }}" class="tutorial-link">📚 词汇分析</a>
                 <a href="javascript:void(0)" class="donate-link" id="donateButton">
                     <!-- 使用 url_for 加载图片 -->
                     <img src="{{ url_for('static', filename='pic/donate-icon.png') }}" alt="赞助" class="donate-icon" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23f06292%22><path d=%22M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z%22/></svg>'">
@@ -278,6 +279,16 @@
                                 <div class="input-hint">翻译后自动进行英文大小写格式校对</div>
                             </div>
                             <!-- 结束新增：LLM大小写校对设置 -->
+                            
+                            <!-- 新增：词汇分析设置 -->
+                            <div>
+                                <span style="display: inline-flex; align-items: center;">
+                                    <input type="checkbox" id="enableVocabularyAnalysis" checked style="margin-right: 5px; vertical-align: middle;">
+                                    <label for="enableVocabularyAnalysis" style="margin-bottom: 0; display: flex; align-items: center;">启用词汇分析 (默认开启):</label>
+                                </span>
+                                <div class="input-hint">分析翻译结果，生成剑桥少儿英语生词列表</div>
+                            </div>
+                            <!-- 结束新增：词汇分析设置 -->
                         </div>
                     </div>
                 </div>

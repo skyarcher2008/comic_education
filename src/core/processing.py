@@ -14,6 +14,7 @@ from src.core.detection import get_bubble_coordinates
 from src.core.ocr import recognize_text_in_bubbles
 from src.core.translation import translate_text_list
 from src.core.proofreading import proofread_text_list_capitalization  # 新增：校对模块
+from src.core.vocabulary_analysis import analyze_translation_files  # 新增：词汇分析模块
 from src.core.inpainting import inpaint_bubbles
 from src.core.rendering import render_all_bubbles, calculate_auto_font_size, get_font # 需要渲染和计算函数
 
@@ -77,8 +78,12 @@ def process_image_translation(
     proofreading_api_key=None,  # 校对API密钥，None表示使用翻译相同的密钥
     proofreading_model_name=None, # 校对模型名称，None表示使用翻译相同的模型
     proofreading_custom_base_url=None, # 校对自定义API地址，None表示使用翻译相同的地址
-    proofreading_rpm_limit=None  # 校对请求频率限制，None表示使用翻译相同的限制
+    proofreading_rpm_limit=None,  # 校对请求频率限制，None表示使用翻译相同的限制
     # === 新增校对参数 END ===
+    # === 新增词汇分析参数 START ===
+    enable_vocabulary_analysis=False,  # 是否启用词汇分析
+    vocabulary_analysis_output_dir="data/vocabulary_analysis"  # 词汇分析输出目录
+    # === 新增词汇分析参数 END ===
     # ^^^^^^ 结束新增 ^^^^^^
     ):
     """
@@ -347,6 +352,61 @@ def process_image_translation(
                     else:
                         logger.debug("LLM校对未启用")
                 # === LLM校对步骤 END ===
+                
+                # === 词汇分析步骤 START ===
+                logger.info(f"检查词汇分析条件: enable={enable_vocabulary_analysis}, target_language={target_language}")
+                if enable_vocabulary_analysis and target_language.lower() in ['english', 'en']:
+                    logger.info("步骤 3.6: 开始词汇分析...")
+                    vocab_analysis_start_time = time.time()
+                    
+                    try:
+                        # 准备分析数据
+                        translations_for_analysis = []
+                        
+                        # 添加气泡文本
+                        for i, text in enumerate(translated_bubble_texts):
+                            if text and text.strip():
+                                translations_for_analysis.append({
+                                    'text': text,
+                                    'source': f'bubble_{i+1}',
+                                    'type': 'bubble'
+                                })
+                        
+                        # 添加文本框文本（如果不同）
+                        if translated_textbox_texts != translated_bubble_texts:
+                            for i, text in enumerate(translated_textbox_texts):
+                                if text and text.strip():
+                                    translations_for_analysis.append({
+                                        'text': text,
+                                        'source': f'textbox_{i+1}',
+                                        'type': 'textbox'
+                                    })
+                        
+                        # 执行词汇分析
+                        if translations_for_analysis:
+                            report_path, word_list_path = analyze_translation_files(
+                                translations_for_analysis,
+                                vocabulary_analysis_output_dir
+                            )
+                            logger.info(f"词汇分析完成，报告保存到: {report_path}")
+                            logger.info(f"生词列表保存到: {word_list_path}")
+                        else:
+                            logger.info("没有有效的翻译文本，跳过词汇分析")
+                        
+                        logger.info(f"词汇分析耗时: {time.time() - vocab_analysis_start_time:.2f}s")
+                        
+                    except Exception as vocab_e:
+                        logger.error(f"词汇分析过程出错: {vocab_e}", exc_info=True)
+                        if ignore_connection_errors:
+                            logger.warning("词汇分析出错，继续处理流程")
+                        else:
+                            raise
+                else:
+                    if enable_vocabulary_analysis:
+                        logger.info("跳过词汇分析：目标语言非英文")
+                    else:
+                        logger.debug("词汇分析未启用")
+                # === 词汇分析步骤 END ===
             except Exception as e:
                 logger.error(f"翻译过程发生错误: {e}", exc_info=True)
                 if ignore_connection_errors:

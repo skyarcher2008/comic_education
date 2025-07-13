@@ -101,6 +101,21 @@ def translate_image():
         image_data = data.get('image')
         target_language = data.get('target_language', constants.DEFAULT_TARGET_LANG)
         source_language = data.get('source_language', constants.DEFAULT_SOURCE_LANG)
+        
+        # === 新增：获取词汇分析参数 START ===
+        enable_vocabulary_analysis = data.get('enable_vocabulary_analysis', False)
+        vocabulary_analysis_output_dir = data.get('vocabulary_analysis_output_dir', 'data/vocabulary_analysis')
+        
+        logger.info(f"词汇分析设置: enable={enable_vocabulary_analysis}, output_dir={vocabulary_analysis_output_dir}")
+        
+        # 强制启用词汇分析（如果目标语言是英语）
+        if target_language.lower() in ['english', 'en'] and not enable_vocabulary_analysis:
+            logger.info("自动启用词汇分析：检测到英语翻译")
+            enable_vocabulary_analysis = True
+        
+        # 最终词汇分析状态
+        logger.info(f"最终词汇分析状态: enable={enable_vocabulary_analysis}, 目标语言={target_language}")
+        # === 新增：获取词汇分析参数 END ===
         font_size_str = data.get('fontSize')
         autoFontSize = data.get('autoFontSize', False)
         api_key = data.get('api_key')
@@ -279,8 +294,12 @@ def translate_image():
                 proofreading_api_key=proofreading_api_key,
                 proofreading_model_name=proofreading_model_name,
                 proofreading_custom_base_url=proofreading_custom_base_url,
-                proofreading_rpm_limit=proofreading_rpm_limit
+                proofreading_rpm_limit=proofreading_rpm_limit,
                 # === 新增：传递校对参数给 processing END ===
+                # === 新增：传递词汇分析参数给 processing START ===
+                enable_vocabulary_analysis=enable_vocabulary_analysis,
+                vocabulary_analysis_output_dir=vocabulary_analysis_output_dir
+                # === 新增：传递词汇分析参数给 processing END ===
                 # ------------------------------------
             )
             
@@ -340,8 +359,12 @@ def translate_image():
                 proofreading_api_key=proofreading_api_key,
                 proofreading_model_name=proofreading_model_name,
                 proofreading_custom_base_url=proofreading_custom_base_url,
-                proofreading_rpm_limit=proofreading_rpm_limit
+                proofreading_rpm_limit=proofreading_rpm_limit,
                 # === 新增：传递校对参数给 processing END ===
+                # === 新增：传递词汇分析参数给 processing START ===
+                enable_vocabulary_analysis=enable_vocabulary_analysis,
+                vocabulary_analysis_output_dir=vocabulary_analysis_output_dir
+                # === 新增：传递词汇分析参数给 processing END ===
                 # ------------------------------------
             )
             
